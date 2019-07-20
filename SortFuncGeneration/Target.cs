@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using FsCheck;
 using ProtoBuf;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace SortFuncGeneration
 {
@@ -24,20 +25,19 @@ namespace SortFuncGeneration
 
         public override string ToString()
         {
-            //return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
-            return $"{StrProp1}";
+            return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
         }
     }
     
 
     public class TargetEx
     {
-        private readonly Gen<string> genNonEmptyAlphaString =
-            from ss in Arb.Generate<string>()
-            where !string.IsNullOrEmpty(ss)
-            where ss.ToCharArray().All(char.IsLetter)
-            where ss.Length > 1
-            select ss;
+    //    private readonly Gen<string> genNonEmptyAlphaString =
+    //        from ss in Arb.Generate<string>()
+    //        where !string.IsNullOrEmpty(ss)
+    //        where ss.ToCharArray().All(char.IsLetter)
+    //        where ss.Length > 1
+    //        select ss;
 
 
         public TargetEx(int int1, int int2, Guid g1, Guid g2)
@@ -46,8 +46,8 @@ namespace SortFuncGeneration
             IntProp2 = int2;
             //StrProp1 = neStr1.Get.ToUpper();
             //StrProp2 = neStr2.Get.ToUpper();
-            StrProp1 = g1.ToString();
-            StrProp2 = g2.ToString();
+            StrProp1 = g1.ToString().Substring(8);
+            StrProp2 = g2.ToString().Substring(8);
         }
 
         public int IntProp1 { get; }
