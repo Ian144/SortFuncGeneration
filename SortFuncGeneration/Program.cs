@@ -24,7 +24,7 @@ namespace SortFuncGeneration
             }
             else
             {
-                Console.WriteLine("invalid benchmark, handcoded is not equivalend to generated");
+                Console.WriteLine("invalid benchmark, handcoded is not equivalent to generated");
             }
 
 

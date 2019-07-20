@@ -160,7 +160,6 @@ namespace SortFuncGeneration
                 .ThenBy(x => x.IntProp2)
                 .ThenByDescending(x => x.StrProp2)
                 .Consume(_consumer);
-
         }
     }
 }
