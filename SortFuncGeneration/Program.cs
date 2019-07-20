@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 
+// ReSharper disable UnusedVariable
 
 namespace SortFuncGeneration
 {
     static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
 
+            TestDataCreation.CreateAndPersistData();
+
+            
             var summary = BenchmarkRunner.Run<SortingBenchmarks>();
 
 

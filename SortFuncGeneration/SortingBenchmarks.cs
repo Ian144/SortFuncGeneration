@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using FsCheck;
 
 namespace SortFuncGeneration
 {
+    [MemoryDiagnoser]
     public class SortingBenchmarks
     {
         private List<Target> _xs;
@@ -16,9 +18,16 @@ namespace SortFuncGeneration
         [IterationSetup]
         public void Setup()
         {
-            var arb = Arb.From<Target>();
+            //var arb = Arb.From<Target>();
+            //_xs = arb.Generator.Sample(100000).ToList();
 
-            _xs = arb.Generator.Sample(100000).ToList();
+            byte[] bs = File.ReadAllBytes("targetData.data");
+            using (var ms = new MemoryStream())
+            {
+                ms.Write(bs, 0, bs.Length);
+                ms.Seek(0, SeekOrigin.Begin);
+                _xs = ProtoBuf.Serializer.Deserialize<Target[]>(ms).ToList();
+            }
 
             var sortBys = new List<SortBy>
             {
@@ -47,13 +56,13 @@ namespace SortFuncGeneration
         [Benchmark]
         public void GeneratedListSort()
         {
-            _xs.Sort(_generatedComparer); 
+            _xs.Sort(_generatedComparer);
         }
 
         [Benchmark]
         public void HandCodedListSort()
         {
-           _xs.Sort(_handCodedComparer);
+            _xs.Sort(_handCodedComparer);
         }
 
         [Benchmark]
@@ -65,15 +74,13 @@ namespace SortFuncGeneration
         [Benchmark]
         public void HandCodedOrderBy()
         {
-            int cc = _xs.OrderBy(x=>x,_handCodedComparer).Count();
+            int cc = _xs.OrderBy(x => x, _handCodedComparer).Count();
         }
 
         [Benchmark]
-        public void OldStyle()
+        public void OrderByThenByDesc()
         {
             int cc = _xs.OrderBy(x => x.IntProp1).ThenByDescending(x => x.IntProp2).Count();
         }
-
-
     }
 }
