@@ -8,9 +8,11 @@ namespace SortFuncGeneration
     {
         public static void CreateAndPersistData()
         {
-            var arb = Arb.From<Target>();
+            var arb = Arb.From<TargetEx>();
 
-            Target[] items = arb.Generator.Sample(100000);
+            TargetEx[] rawItems = arb.Generator.Sample(10000);
+
+            Target[] items = rawItems.Select( te => new Target{ IntProp1  = te.IntProp1, IntProp2 = te.IntProp2, StrProp1 = te.StrProp1, StrProp2 = te.StrProp2} ).ToArray();
 
             using (var ms = new MemoryStream())
             {

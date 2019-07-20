@@ -1,4 +1,8 @@
-﻿using BenchmarkDotNet.Running;
+﻿using System;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
 
 // ReSharper disable UnusedVariable
 
@@ -11,8 +15,17 @@ namespace SortFuncGeneration
 
             TestDataCreation.CreateAndPersistData();
 
-            
-            var summary = BenchmarkRunner.Run<SortingBenchmarks>();
+            var sb = new SortingBenchmarks();
+            bool comparisonValid = sb.CheckSortsEquivalent();
+
+            if (comparisonValid)
+            {
+                var summary = BenchmarkRunner.Run<SortingBenchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64));
+            }
+            else
+            {
+                Console.WriteLine("invalid benchmark, handcoded is not equivalend to generated");
+            }
 
 
             //var xs = new List<Target>

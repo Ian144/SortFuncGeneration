@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
-using FsCheck;
+using static System.String;
 
 namespace SortFuncGeneration
 {
@@ -31,15 +32,48 @@ namespace SortFuncGeneration
 
             var sortBys = new List<SortBy>
             {
-                new SortBy{PropName = "IntProp2", Ascending = true},
-                new SortBy{PropName = "IntProp1", Ascending = false}
+                new SortBy{PropName = "IntProp1", Ascending = true},
+                //new SortBy{PropName = "IntProp2", Ascending = false},
+                new SortBy{PropName = "StrProp1", Ascending = false},
+                //new SortBy{PropName = "StrProp2", Ascending = true},
             };
 
             Func<Target, Target, int> sortFunc = SortFuncCompiler.MakeSortFunc<Target>(sortBys);
 
             _generatedComparer = new MyComparer<Target>(sortFunc);
 
-            _handCodedComparer = new MyComparer<Target>(SortTwoIntsHC);
+            _handCodedComparer = new MyComparer<Target>(SortOneIntOneStrHC);
+        }
+
+
+        private static int SortStr1DescHC(Target aa, Target bb)
+        {
+            return CompareOrdinal(bb.StrProp1, aa.StrProp1);
+        }
+
+
+        private static int SortOneIntTwoStrsHC(Target aa, Target bb)
+        {
+            int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
+
+            if (s1 != 0) return s1;
+
+            // aa and bb flipped, as this comparison is descending
+            int s2 = CompareOrdinal(bb.StrProp1, aa.StrProp1);
+
+            if (s2 != 0) return s2;
+
+            return CompareOrdinal(aa.StrProp2, bb.StrProp2);
+        }
+
+        private static int SortOneIntOneStrHC(Target aa, Target bb)
+        {
+            int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
+
+            if (s1 != 0) return s1;
+
+            // aa and bb flipped, as this comparison is descending
+            return CompareOrdinal(bb.StrProp1, aa.StrProp1);
         }
 
 
@@ -51,6 +85,21 @@ namespace SortFuncGeneration
 
             return bb.IntProp2.CompareTo(aa.IntProp2);
         }
+
+
+        public bool CheckSortsEquivalent()
+        {
+            Setup();
+            var genSorted = _xs.OrderBy(tt => tt, _generatedComparer).ToList();
+            var hcSorted = _xs.OrderBy(tt => tt, _handCodedComparer).ToList();
+
+            var ordByThenByDesc = _xs.OrderBy(x => x.IntProp1).ThenByDescending(x => x.StrProp1).ToList();
+
+            bool hcOk = genSorted.SequenceEqual(hcSorted);
+            bool ordByOk = genSorted.SequenceEqual(ordByThenByDesc);
+            return hcOk && ordByOk;
+        }
+
 
 
         [Benchmark]
@@ -80,7 +129,7 @@ namespace SortFuncGeneration
         [Benchmark]
         public void OrderByThenByDesc()
         {
-            int cc = _xs.OrderBy(x => x.IntProp1).ThenByDescending(x => x.IntProp2).Count();
+            int cc = _xs.OrderBy(x => x.IntProp1).ThenByDescending(x => x.StrProp1).Count();
         }
     }
 }

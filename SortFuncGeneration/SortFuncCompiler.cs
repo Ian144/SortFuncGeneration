@@ -14,7 +14,7 @@ namespace SortFuncGeneration
 
     public static class SortFuncCompiler
     {
-        private static readonly MethodInfo _strCompareTo = typeof(string).GetMethod("CompareTo", new[] { typeof(string) });
+        private static readonly MethodInfo _strCompareTo = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
 
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
@@ -44,7 +44,7 @@ namespace SortFuncGeneration
 
                 if (prop1.Type == typeof(string))
                 {
-                    compareExpr = Expression.Call(prop1, _strCompareTo, prop2);
+                    compareExpr = Expression.Call(_strCompareTo, prop1, prop2);
                 }
                 else if (prop1.Type == typeof(int))
                 {
