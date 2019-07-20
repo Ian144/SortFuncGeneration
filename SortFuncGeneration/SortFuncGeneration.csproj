@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SortFuncCompilerTernary.cs" />
     <Compile Include="SortingBenchmarks.cs" />
     <Compile Include="Target.cs" />
     <Compile Include="MyComparer.cs" />
