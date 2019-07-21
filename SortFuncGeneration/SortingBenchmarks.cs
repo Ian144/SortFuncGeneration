@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using FastExpressionCompiler;
 using FsCheck;
 using static System.String;
 
@@ -21,7 +22,7 @@ namespace SortFuncGeneration
         private readonly Consumer _consumer = new Consumer();
         private MyComparer<Target> _handCodedTernary;
         private MyComparer<Target> _runtimeCompiledTernaryComparer;
-        private MyComparer<Target> _generatedTernaryComparer;
+        private MyComparer<Target> _genTernComparer;
 
 
         [IterationSetup]
@@ -52,44 +53,47 @@ namespace SortFuncGeneration
 
             _handCodedComparer = new MyComparer<Target>(HandCoded);
 
-            _handCodedTernary = new MyComparer<Target>(SortIntStrDescIntStrDescTernary);
+            _handCodedTernary = new MyComparer<Target>(HandCodedTernary);
 
-            Expression<Func<Target,Target,int>> exprTernary = (aa, bb) =>
-                aa.IntProp1.CompareTo(bb.IntProp1) != 0
-                    ? aa.IntProp1.CompareTo(bb.IntProp1)
-                    : CompareOrdinal(bb.StrProp1, aa.StrProp1) != 0
-                        ? CompareOrdinal(bb.StrProp1, aa.StrProp1)
-                        : aa.IntProp2.CompareTo(bb.IntProp2) != 0
-                            ? aa.IntProp2.CompareTo(bb.IntProp2)
-                            : CompareOrdinal(bb.StrProp2, aa.StrProp2);
 
-            Expression<Func<Target, Target, int>> exprTernary3 = (aa, bb) =>
-                aa.IntProp1.CompareTo(bb.IntProp1) != 0
-                    ? aa.IntProp1.CompareTo(bb.IntProp1)
-                    : CompareOrdinal(bb.StrProp1, aa.StrProp1) != 0
-                        ? CompareOrdinal(bb.StrProp1, aa.StrProp1)
-                        : aa.IntProp2.CompareTo(bb.IntProp2);
+            Func<Target, Target, int> genTernSortFunc = SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys);
+            _genTernComparer = new MyComparer<Target>(genTernSortFunc);
+
+            //Expression<Func<Target,Target,int>> exprTernary = (aa, bb) =>
+            //    aa.IntProp1.CompareTo(bb.IntProp1) != 0
+            //        ? aa.IntProp1.CompareTo(bb.IntProp1)
+            //        : CompareOrdinal(bb.StrProp1, aa.StrProp1) != 0
+            //            ? CompareOrdinal(bb.StrProp1, aa.StrProp1)
+            //            : aa.IntProp2.CompareTo(bb.IntProp2) != 0
+            //                ? aa.IntProp2.CompareTo(bb.IntProp2)
+            //                : CompareOrdinal(bb.StrProp2, aa.StrProp2);
+
+            //Expression<Func<Target, Target, int>> exprTernary3 = (aa, bb) =>
+            //    aa.IntProp1.CompareTo(bb.IntProp1) != 0
+            //        ? aa.IntProp1.CompareTo(bb.IntProp1)
+            //        : CompareOrdinal(bb.StrProp1, aa.StrProp1) != 0
+            //            ? CompareOrdinal(bb.StrProp1, aa.StrProp1)
+            //            : aa.IntProp2.CompareTo(bb.IntProp2);
 
             Expression<Func<Target, Target, int>> exprTernary2 = (aa, bb) =>
                 aa.IntProp1.CompareTo(bb.IntProp1) != 0
                     ? aa.IntProp1.CompareTo(bb.IntProp1)
                     : CompareOrdinal(bb.StrProp1, aa.StrProp1);
 
-            Expression<Func<Target, Target, int>> exprTernary1 = (aa, bb) =>
-                aa.IntProp1.CompareTo(bb.IntProp1);
+            //Expression<Func<Target, Target, int>> exprTernary1 = (aa, bb) =>
+            //    aa.IntProp1.CompareTo(bb.IntProp1);
 
-            Func<Target,Target,int> exprTernaryCompiled = exprTernary2.Compile();
+            Func<Target,Target,int> exprTernaryCompiled = exprTernary2.CompileFast();
 
             _runtimeCompiledTernaryComparer = new MyComparer<Target>(exprTernaryCompiled);
 
 
-            Func<Target, Target, int> generatedTernaryFunc = SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys);
-            _generatedTernaryComparer = new MyComparer<Target>(generatedTernaryFunc);
-
+            //Func<Target, Target, int> generatedTernaryFunc = SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys);
+            //_generatedTernaryComparer = new MyComparer<Target>(generatedTernaryFunc);
 
         }
 
-        private static int SortIntStrDescIntStrDescTernary(Target aa, Target bb)
+        private static int HandCodedTernary(Target aa, Target bb)
         {
             return
                 aa.IntProp1.CompareTo(bb.IntProp1) != 0
@@ -146,23 +150,20 @@ namespace SortFuncGeneration
             bool hcOk = genSorted.SequenceEqual(hcSorted);
             bool ordByOk = genSorted.SequenceEqual(ordByThenByDesc);
 
-
             var runtimeCompiledTernarySorted = _xs.OrderBy(tt => tt, _runtimeCompiledTernaryComparer).ToList();
-
             bool runtimeCompiledTernaryOk = genSorted.SequenceEqual(runtimeCompiledTernarySorted);
 
+            var genTernComparerSorted = _xs.OrderBy(m => m, _genTernComparer).ToList();
+            bool genTernaryOk = genSorted.SequenceEqual(genTernComparerSorted);
 
-            var genTernarySorted = _xs.OrderBy(m => m, _generatedTernaryComparer).ToList();
-            bool genTernaryOk = genSorted.SequenceEqual(genTernarySorted);
-
-            return hcOk && ordByOk && runtimeCompiledTernaryOk;// && genTernaryOk;
+            return hcOk && ordByOk && runtimeCompiledTernaryOk && genTernaryOk;
         }
 
-        //[Benchmark]
-        //public void GeneratedListSortTernary()
-        //{
-        //    _xs.Sort(_generatedTernaryComparer);
-        //}
+        [Benchmark]
+        public void GeneratedListSortTernary()
+        {
+            _xs.Sort(_genTernComparer);
+        }
 
 
         [Benchmark]

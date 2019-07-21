@@ -17,7 +17,6 @@ namespace SortFuncGeneration
             using (var ms = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(ms, items);
-                var tmp = ProtoBuf.Serializer.Deserialize<Target[]>(ms);
                 var bs = ms.ToArray();
                 File.WriteAllBytes("targetData.data", bs);
             }
