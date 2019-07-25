@@ -12,7 +12,6 @@ namespace SortFuncGeneration
     public static class SortFuncCompilerTernary
     {
         private static readonly MethodInfo _strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
-        private static readonly MethodInfo _strCompareTo = typeof(string).GetMethod("CompareTo", new[] { typeof(string)});
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
         private static readonly MethodInfo _dateTimeCompareTo = typeof(DateTime).GetMethod("CompareTo", new[] { typeof(DateTime) });
 
@@ -29,7 +28,6 @@ namespace SortFuncGeneration
                 if (prop1.Type == typeof(string))
                 {
                     compareExpr = Expression.Call(_strCompareOrdinal, prop1, prop2);
-                    //compareExpr = Expression.Call(prop1, _strCompareTo, prop2);
                 }
                 else if (prop1.Type == typeof(int))
                 {
@@ -53,9 +51,8 @@ namespace SortFuncGeneration
             }
         }
 
-        private static Expression MakeSortExpression<T>(IEnumerable<SortBy> sortDescriptors, ParameterExpression param1Expr, ParameterExpression param2Expr)
+        private static Expression MakeSortExpression<T>(IEnumerable<SortBy> sortDescriptors, ParameterExpression param1Expr, ParameterExpression param2Expr, ParameterExpression tmpInt)
         {
-
             if (sortDescriptors.Count() == 1)
             {
                 return MakePropertyCompareExpression(sortDescriptors.First(), param1Expr, param2Expr);
@@ -63,16 +60,13 @@ namespace SortFuncGeneration
             
             Expression compare = MakePropertyCompareExpression(sortDescriptors.First(), param1Expr, param2Expr);
 
-            //var variableExpr = Expression.Variable(typeof(int), "comp1result");
-            //var assignExpr = Expression.Assign(variableExpr, compare); // does this require a block? thereby making it the same as ?; ternary
-
-            // could i write my own NotZeroThen expression? might not be able to write an operrator, but could do this
+            BinaryExpression assignExpr = Expression.Assign(tmpInt, compare);
 
             var condExpr =
                 Expression.Condition(
-                    Expression.NotEqual(Expression.Constant(0), compare),
-                    compare,
-                    MakeSortExpression<T>(sortDescriptors.Skip(1), param1Expr, param2Expr)
+                    Expression.NotEqual(Expression.Constant(0), assignExpr), // assignments have a return value
+                    tmpInt,
+                    MakeSortExpression<T>(sortDescriptors.Skip(1), param1Expr, param2Expr, tmpInt)
                 );
 
             return condExpr;
@@ -82,10 +76,16 @@ namespace SortFuncGeneration
         {
             ParameterExpression param1Expr = Expression.Parameter(typeof(T));
             ParameterExpression param2Expr = Expression.Parameter(typeof(T));
-            Expression compositeCompare = MakeSortExpression<T>(sortDescriptors, param1Expr, param2Expr);
-            Expression<Func<T, T, int>> lambda = Expression.Lambda<Func<T, T, int>>(compositeCompare, param1Expr, param2Expr);
+            ParameterExpression tmpInt = Expression.Variable(typeof(int), "tmp");
+
+            Expression compositeCompare = MakeSortExpression<T>(sortDescriptors, param1Expr, param2Expr, tmpInt);
+
+            ParameterExpression[] variables = { tmpInt };
+            Expression[] body = { compositeCompare };
+            var block = Expression.Block(variables, body);
+
+            Expression<Func<T, T, int>> lambda = Expression.Lambda<Func<T, T, int>>(block, param1Expr, param2Expr);
             return lambda.CompileFast();
         }
-
     }
 }

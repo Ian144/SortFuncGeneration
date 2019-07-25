@@ -16,7 +16,7 @@ namespace SortFuncGeneration
             TestDataCreation.CreateAndPersistData();
 
             var sb = new SortingBenchmarks();
-            bool comparisonValid = sb.CheckSortsEquivalent();
+            bool comparisonValid = sb.CheckValidBenchmarks();
 
             if (comparisonValid)
             {

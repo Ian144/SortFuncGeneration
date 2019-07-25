@@ -28,26 +28,15 @@ namespace SortFuncGeneration
             return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
         }
     }
-    
 
     public class TargetEx
     {
-    //    private readonly Gen<string> genNonEmptyAlphaString =
-    //        from ss in Arb.Generate<string>()
-    //        where !string.IsNullOrEmpty(ss)
-    //        where ss.ToCharArray().All(char.IsLetter)
-    //        where ss.Length > 1
-    //        select ss;
-
-
-        public TargetEx(int int1, int int2, Guid g1, Guid g2)
+        public TargetEx(int int1, int int2, NonEmptyString nes1, NonEmptyString nes2)
         {
             IntProp1 = int1;
             IntProp2 = int2;
-            //StrProp1 = neStr1.Get.ToUpper();
-            //StrProp2 = neStr2.Get.ToUpper();
-            StrProp1 = g1.ToString().Substring(8);
-            StrProp2 = g2.ToString().Substring(8);
+            StrProp1 = nes1.Get;
+            StrProp2 = nes2.Get;
         }
 
         public int IntProp1 { get; }

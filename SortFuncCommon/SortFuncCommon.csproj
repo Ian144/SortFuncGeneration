@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E6DDEFFC-6996-44AC-8C7A-A023CB6C386B}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>SortFuncGeneration</RootNamespace>
-    <AssemblyName>SortFuncGeneration</AssemblyName>
+    <ProjectGuid>{14F41A17-7DF3-440F-A293-0963DA792F56}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SortFuncCommon</RootNamespace>
+    <AssemblyName>SortFuncCommon</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,37 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="SortFuncCompilerTernary.cs" />
-    <Compile Include="SortingBenchmarks.cs" />
-    <Compile Include="MyComparer.cs" />
-    <Compile Include="SortFuncCompiler.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestDataCreation.cs" />
+    <Compile Include="Target.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet">
-      <Version>0.11.5</Version>
-    </PackageReference>
-    <PackageReference Include="FastExpressionCompiler">
-      <Version>2.0.0</Version>
-    </PackageReference>
     <PackageReference Include="FsCheck">
       <Version>3.0.0-alpha4</Version>
     </PackageReference>
     <PackageReference Include="protobuf-net">
       <Version>2.4.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SortFuncCommon\SortFuncCommon.csproj">
-      <Project>{14F41A17-7DF3-440F-A293-0963DA792F56}</Project>
-      <Name>SortFuncCommon</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
