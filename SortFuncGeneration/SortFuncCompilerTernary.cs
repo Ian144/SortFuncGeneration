@@ -14,6 +14,7 @@ namespace SortFuncGeneration
         private static readonly MethodInfo _strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
         private static readonly MethodInfo _dateTimeCompareTo = typeof(DateTime).GetMethod("CompareTo", new[] { typeof(DateTime) });
+        private static readonly ConstantExpression _zeroExpr = Expression.Constant(0);
 
         private static Expression MakePropertyCompareExpression(SortBy sortDescriptor, ParameterExpression rm1, ParameterExpression rm2)
         {
@@ -60,16 +61,11 @@ namespace SortFuncGeneration
             
             Expression compare = MakePropertyCompareExpression(sortDescriptors.First(), param1Expr, param2Expr);
 
-            BinaryExpression assignExpr = Expression.Assign(tmpInt, compare);
-
-            var condExpr =
-                Expression.Condition(
-                    Expression.NotEqual(Expression.Constant(0), assignExpr), // assignments have a return value
-                    tmpInt,
-                    MakeSortExpression<T>(sortDescriptors.Skip(1), param1Expr, param2Expr, tmpInt)
-                );
-
-            return condExpr;
+            return Expression.Condition(
+                Expression.NotEqual(_zeroExpr, Expression.Assign(tmpInt, compare)), // perform the comparison and assign the value to tmpInt, assignments are expressions and have a value
+                tmpInt,
+                MakeSortExpression<T>(sortDescriptors.Skip(1), param1Expr, param2Expr, tmpInt)
+            );
         }
 
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
@@ -85,7 +81,11 @@ namespace SortFuncGeneration
             var block = Expression.Block(variables, body);
 
             Expression<Func<T, T, int>> lambda = Expression.Lambda<Func<T, T, int>>(block, param1Expr, param2Expr);
-            return lambda.CompileFast();
+
+            //return lambda.CompileFast(false);
+            //return lambda.TryCompileWithoutClosure<Func<T, T, int>>();
+            return lambda.TryCompile<Func<T, T, int>>();
+            //return lambda.TryCompileWithPreCreatedClosure<Func<T, T, int>>();
         }
     }
 }

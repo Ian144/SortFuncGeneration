@@ -10,7 +10,7 @@ namespace SortFuncGeneration
         {
             var arb = Arb.From<TargetEx>();
 
-            TargetEx[] rawItems = arb.Generator.Sample(1000000);
+            TargetEx[] rawItems = arb.Generator.Sample(50000);
 
             Target[] items = rawItems.Select( te => new Target{ IntProp1  = te.IntProp1, IntProp2 = te.IntProp2, StrProp1 = te.StrProp1, StrProp2 = te.StrProp2} ).ToArray();
 
