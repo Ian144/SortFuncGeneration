@@ -57,7 +57,6 @@ namespace SortFuncGeneration
             Func<Target, Target, int> genTernSortFunc = SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys);
             _genTernComparer = new MyComparer<Target>(genTernSortFunc);
 
-
             _nitoComparer = ComparerBuilder.For<Target>()
                 .OrderBy(p => p.IntProp1)
                 .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
