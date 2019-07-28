@@ -1,7 +1,5 @@
 ﻿// ReSharper disable MemberCanBePrivate.Global
 
-using System;
-using System.Linq;
 using FsCheck;
 using ProtoBuf;
 // ReSharper disable ClassNeverInstantiated.Global

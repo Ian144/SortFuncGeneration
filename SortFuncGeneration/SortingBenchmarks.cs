@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using Nito.Comparers;
+
 using static System.String;
 
 namespace SortFuncGeneration
@@ -24,6 +24,9 @@ namespace SortFuncGeneration
         private IComparer<Target> _handCodedComposedFunctionsComparer;
         private MyComparer<Target> _handCodedTernary;
 
+        private static readonly Func<Target, Target, int>[] _composedSubFuncs =
+            {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
+        
 
         [IterationSetup]
         public void Setup()
@@ -51,16 +54,18 @@ namespace SortFuncGeneration
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
 
-            Func<Target, Target, int> sortFunc = SortFuncCompiler.MakeSortFuncCompToMeth<Target>(sortBys);
+            _generatedComparer = new MyComparer<Target>(
+                    SortFuncCompiler.MakeSortFuncCompToMeth<Target>(sortBys)
+                );
 
-            _generatedComparer = new MyComparer<Target>(sortFunc);
+            _genTernComparer = new MyComparer<Target>(
+                SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys)
+            );
 
             _handCodedComparer = new MyComparer<Target>(HandCoded);
 
             _handCodedTernary = new MyComparer<Target>(HandCodedTernary);
 
-            Func<Target, Target, int> genTernSortFunc = SortFuncCompilerTernary.MakeSortFunc<Target>(sortBys);
-            _genTernComparer = new MyComparer<Target>(genTernSortFunc);
 
             _handCodedComposedFunctionsComparer = new MyComparer<Target>(HandCodedComposedFuncs);
 
@@ -78,7 +83,7 @@ namespace SortFuncGeneration
             int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
             if (s1 != 0) return s1;
 
-            int s2 = string.CompareOrdinal(aa.StrProp1, bb.StrProp1);
+            int s2 = CompareOrdinal(aa.StrProp1, bb.StrProp1);
             if (s2 != 0) return s2;
 
             int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
@@ -87,59 +92,87 @@ namespace SortFuncGeneration
             return CompareOrdinal(aa.StrProp2, bb.StrProp2);
         }
 
-        private static int HandCodedStrCmpOrd(Target aa, Target bb)
-        {
-            // aa and bb flipped when the comparison is descending
+        //private static int HandCodedStrCmpOrd(Target aa, Target bb)
+        //{
+        //    // aa and bb flipped when the comparison is descending
 
-            int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
-            if (s1 != 0) return s1;
+        //    int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
+        //    if (s1 != 0) return s1;
 
-            int s2 = string.Compare(aa.StrProp1, bb.StrProp1, StringComparison.Ordinal);
-            if (s2 != 0) return s2;
+        //    int s2 = string.Compare(aa.StrProp1, bb.StrProp1, StringComparison.Ordinal);
+        //    if (s2 != 0) return s2;
 
-            int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
-            if (s3 != 0) return s3;
+        //    int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
+        //    if (s3 != 0) return s3;
 
-            return Compare(aa.StrProp2, bb.StrProp2, StringComparison.Ordinal);
-        }
+        //    return Compare(aa.StrProp2, bb.StrProp2, StringComparison.Ordinal);
+        //}
 
+        // this is the same as other hande coded funcs
+
+
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int CmpIntProp1(Target aa1, Target bb1) => aa1.IntProp1.CompareTo(bb1.IntProp1);
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int CmpStrProp1(Target aa2, Target bb2) => CompareOrdinal(aa2.StrProp1, bb2.StrProp1);
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int CmpIntProp2(Target aa3, Target bb3) => aa3.IntProp2.CompareTo(bb3.IntProp2);
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int CmpStrProp2(Target aa4, Target bb4) => CompareOrdinal(aa4.StrProp2, bb4.StrProp2);
+
+        //private static int HandCodedComposedFuncs(Target aa, Target bb)
+        //{
+        //    int tmp;
+
+        //    return (tmp = CmpIntProp1(aa, bb)) != 0
+        //        ? tmp
+        //        : (tmp = CmpStrProp1(aa, bb)) != 0
+        //            ? tmp
+        //            : (tmp = CmpIntProp2(aa, bb)) != 0
+        //                ? tmp
+        //                : CmpStrProp2(aa, bb);
+        //}
 
         private static int HandCodedComposedFuncs(Target aa, Target bb)
         {
-            int CmpIntProp1(Target aa1, Target bb1) => aa1.IntProp1.CompareTo(bb1.IntProp1);
-            int CmpStrProp1(Target aa2, Target bb2) => string.CompareOrdinal(aa2.StrProp1, bb2.StrProp1);
-            int CmpIntProp2(Target aa3, Target bb3) => aa3.IntProp2.CompareTo(bb3.IntProp2);
-            int CmpStrProp2(Target aa4, Target bb4) => string.CompareOrdinal(aa4.StrProp2, bb4.StrProp2);
-
-            Func<Target, Target, int> [] funcs = {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
-
-            foreach (var func in funcs)
+            foreach (var func in _composedSubFuncs)
             {
                 int cmp = func(aa, bb);
                 if (cmp != 0)
                     return cmp;
             }
-
             return 0;
         }
 
         private static int HandCodedTernary(Target xx, Target yy)
         {
-            int tmp = 0;
+            int tmp;
 
-            // assignment is an expression, the value of which is compared to 0
-            int Sorter(Target aa, Target bb) => 
-                (tmp = aa.IntProp1.CompareTo(bb.IntProp1)) != 0
+            return 0 != (tmp = xx.IntProp1.CompareTo(yy.IntProp1))
+                ? tmp
+                : 0 != (tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1))
                     ? tmp
-                    : (tmp = string.CompareOrdinal(aa.StrProp1, bb.StrProp1)) != 0
+                    : 0 != (tmp = xx.IntProp2.CompareTo(yy.IntProp2))
                         ? tmp
-                        : (tmp = aa.IntProp2.CompareTo(bb.IntProp2)) != 0
-                            ? tmp
-                            : string.CompareOrdinal(aa.StrProp2, bb.StrProp2);
-
-            int cmp = Sorter(xx, yy);
-            return cmp;
+                        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
         }
+
+        //private static int HandCodedTernary(Target xx, Target yy)
+        //{
+        //    int tmp;
+
+        //    return (tmp = xx.IntProp1.CompareTo(yy.IntProp1)) != 0
+        //        ? tmp
+        //        : (tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1)) != 0
+        //            ? tmp
+        //            : (tmp = xx.IntProp2.CompareTo(yy.IntProp2)) != 0
+        //                ? tmp
+        //                : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        //}
 
 
         public bool CheckValidBenchmarks()
@@ -176,7 +209,7 @@ namespace SortFuncGeneration
         [Benchmark]
         public void ComposedFunctionsListSort()
         {
-            _xs.Sort(_nitoComparer);
+            _xs.Sort(_handCodedComposedFunctionsComparer);
         }
 
 
