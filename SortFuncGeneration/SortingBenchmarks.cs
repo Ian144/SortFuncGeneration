@@ -24,11 +24,10 @@ namespace SortFuncGeneration
         private IComparer<Target> _handCodedComposedFunctionsComparer;
         private MyComparer<Target> _handCodedTernary;
 
-        private static readonly Func<Target, Target, int>[] _composedSubFuncs =
-            {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
-        
+        private static readonly Func<Target, Target, int>[] _composedSubFuncs = {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
 
-        [IterationSetup]
+
+    [IterationSetup]
         public void Setup()
         {
             byte[] bs = File.ReadAllBytes("targetData.data");
@@ -65,7 +64,6 @@ namespace SortFuncGeneration
             _handCodedComparer = new MyComparer<Target>(HandCoded);
 
             _handCodedTernary = new MyComparer<Target>(HandCodedTernary);
-
 
             _handCodedComposedFunctionsComparer = new MyComparer<Target>(HandCodedComposedFuncs);
 
@@ -150,6 +148,8 @@ namespace SortFuncGeneration
 
         private static int HandCodedTernary(Target xx, Target yy)
         {
+            //return xx.IntProp1.CompareTo(yy.IntProp1);
+
             int tmp;
 
             return 0 != (tmp = xx.IntProp1.CompareTo(yy.IntProp1))
@@ -183,14 +183,14 @@ namespace SortFuncGeneration
 
             var genSorted = _xs.OrderBy(tt => tt, _generatedComparer).ToList();
             var hcSorted = _xs.OrderBy(tt => tt, _handCodedComparer).ToList();
-            var genTernComparerSorted = _xs.OrderBy(m => m, _genTernComparer).ToList();
+            var genTernarySorted = _xs.OrderBy(m => m, _genTernComparer).ToList();
             var nitoSorted = _xs.OrderBy(m => m, _nitoComparer);
             var handCodedComposedFunctionsSorted = _xs.OrderBy(m => m, _handCodedComposedFunctionsComparer);
             var handCodedTernarySorted = _xs.OrderBy(m => m, _handCodedTernary).ToList();
 
             bool hcOk = referenceOrdering.SequenceEqual(hcSorted);
             bool genSortedOk = referenceOrdering.SequenceEqual(genSorted);
-            bool genTernaryOk = referenceOrdering.SequenceEqual(genTernComparerSorted);
+            bool genTernaryOk = referenceOrdering.SequenceEqual(genTernarySorted);
             bool nitoOk = referenceOrdering.SequenceEqual(nitoSorted);
             bool handCodedComposedFunctionsOk = referenceOrdering.SequenceEqual(handCodedComposedFunctionsSorted);
             bool handCodedTernaryOk = referenceOrdering.SequenceEqual(handCodedTernarySorted);
@@ -198,13 +198,18 @@ namespace SortFuncGeneration
             //for (int ctr = 0; ctr < referenceOrdering.Count; ++ctr)
             //{
             //    var refTarget = referenceOrdering[ctr];
-            //    var xxTarget = hcSorted[ctr];
-            //    if(refTarget != xxTarget)
+            //    var xxTarget = genTernarySorted[ctr];
+            //    if (refTarget != xxTarget)
             //        Console.WriteLine($"failure at: {ctr}");
             //}
 
-            return hcOk && genSortedOk && genTernaryOk && nitoOk && handCodedComposedFunctionsOk && handCodedTernaryOk;
-        }
+            return 
+                hcOk && 
+                genSortedOk && 
+                genTernaryOk && 
+                nitoOk && 
+                handCodedComposedFunctionsOk && 
+                handCodedTernaryOk;}
 
         [Benchmark]
         public void ComposedFunctionsListSort()

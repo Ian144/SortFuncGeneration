@@ -13,15 +13,17 @@ namespace SortFuncGeneration
         static void Main()
         {
 
-            TestDataCreation.CreateAndPersistData();
+            TestDataCreation.CreateAndPersistData(50000);
 
             var sb = new SortingBenchmarks();
             bool comparisonValid = sb.CheckValidBenchmarks();
 
             if (comparisonValid)
             {
+                //Console.WriteLine("benchmark is valid");
                 var summary = BenchmarkRunner.Run<SortingBenchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64));
             }
+
             else
             {
                 Console.WriteLine("invalid benchmark, handcoded is not equivalent to generated");
