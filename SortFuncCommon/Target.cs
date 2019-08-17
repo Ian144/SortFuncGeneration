@@ -1,10 +1,14 @@
-﻿// ReSharper disable MemberCanBePrivate.Global
+﻿
 
 using FsCheck;
 using ProtoBuf;
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global used implicitly by fscheck
+// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace SortFuncGeneration
+namespace SortFuncCommon
 {
     [ProtoContract]
     public class Target
@@ -27,9 +31,9 @@ namespace SortFuncGeneration
         }
     }
 
-    public class TargetEx
+    public class TargetBuilder
     {
-        public TargetEx(int int1, int int2, NonEmptyString nes1, NonEmptyString nes2)
+        public TargetBuilder(int int1, int int2, NonEmptyString nes1, NonEmptyString nes2)
         {
             IntProp1 = int1;
             IntProp2 = int2;
