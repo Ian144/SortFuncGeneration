@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using Microsoft.IO;
 using Nito.Comparers;
 
 using static System.String;
@@ -24,19 +25,49 @@ namespace SortFuncGeneration
         private IComparer<Target> _handCodedComposedFunctionsComparer;
         private MyComparer<Target> _handCodedTernary;
 
+        private static readonly RecyclableMemoryStreamManager manager = new RecyclableMemoryStreamManager();
+
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
 
+        public static T ProtoDeserialize<T>(byte[] data) where T : class
+        {
+            using (var ms = manager.GetStream("TestDataCreation", data, 0, data.Length))
+            //using (var ms = new MemoryStream(data))
+            {
+                return ProtoBuf.Serializer.Deserialize<T>(ms);
+            }
+        }
 
-    [IterationSetup]
+
+        [IterationSetup]
         public void Setup()
         {
+            //var fileInfo = new FileInfo("targetData.data");
+            //long len = fileInfo.Length;
+            //var samePool = ArrayPool<byte>.Shared;
+
+
+            //using (var fs = new FileStream("targetData.data", FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024 * 16, FileOptions.Asynchronous))
+            //{
+            //    fs.ReadAsync()
+            //    _xs = ProtoBuf.Serializer.Deserialize<Target[]>(fs).ToList();
+            //}
+
             byte[] bs = File.ReadAllBytes("targetData.data");
-            using (var ms = new MemoryStream())
+            using (var ms = manager.GetStream("xx", bs, 0, 0))
             {
                 ms.Write(bs, 0, bs.Length);
                 ms.Seek(0, SeekOrigin.Begin);
                 _xs = ProtoBuf.Serializer.Deserialize<Target[]>(ms).ToList();
             }
+
+            //byte[] bs = File.ReadAllBytes("targetData.data");
+            //using (var ms = new MemoryStream())
+            //{
+            //    ms.Write(bs, 0, bs.Length);
+            //    ms.Seek(0, SeekOrigin.Begin);
+            //    _xs = ProtoBuf.Serializer.Deserialize<Target[]>(ms).ToList();
+            //}
 
             var sortBys = new List<SortBy>
             {
