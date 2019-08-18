@@ -169,6 +169,11 @@ namespace SortFuncGeneration
                 : CompareOrdinal(xx.StrProp1, yy.StrProp1);
         }
 
+        private static int HandCodedTernary1(Target xx, Target yy)
+        {
+            return xx.IntProp1.CompareTo(yy.IntProp1);
+        }
+
         public static Func<Target, Target, int> MakeDynamic(IList<SortBy> sortDescriptors)
         {
             MethodInfo strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
@@ -202,60 +207,64 @@ namespace SortFuncGeneration
 
             var il = method.GetILGenerator();
 
-            LocalBuilder tmp = il.DeclareLocal(typeof(int)); // blockVarExprs[0] is 'tmp', type is 'int'
-            LocalBuilder v_1 = il.DeclareLocal(typeof(int)); // type is int
-            LocalBuilder v_2 = il.DeclareLocal(typeof(int)); // blockVarExprs[0] is 'tmp', type is 'int'
+            //LocalBuilder tmp = il.DeclareLocal(typeof(int)); // blockVarExprs[0] is 'tmp', type is 'int'
+            //LocalBuilder v_1 = il.DeclareLocal(typeof(int)); // type is int
+            //LocalBuilder v_2 = il.DeclareLocal(typeof(int)); // blockVarExprs[0] is 'tmp', type is 'int'
 
-            //tmp.SetLocalSymInfo("tmp");
-            //v_1.SetLocalSymInfo("v_1");
-            //v_2.SetLocalSymInfo("v_2");
+            //var label_IL_002c = il.DefineLabel();
+            //var label_IL_002d = il.DefineLabel();
+            //var label_IL_0030 = il.DefineLabel();
 
-
-            var label_IL_002c = il.DefineLabel();
-            var label_IL_002d = il.DefineLabel();
-            var label_IL_0030 = il.DefineLabel();
-
-            il.Emit(OpCodes.Ldarg_0);                   // [xx]
-            il.Emit(OpCodes.Callvirt, getIntProp1);     // [xx.IntProp1]
-            il.Emit(OpCodes.Stloc_1);                   // [] v_1 = xx.IntProp1
-            il.Emit(OpCodes.Ldloca_S, v_1);             // [addr(v_1)] v_1=xx.IntProp1
-            il.Emit(OpCodes.Ldarg_1);                   // [addr(v_1), yy] v_1 = xx.IntProp1
-            il.Emit(OpCodes.Callvirt, getIntProp1);     // [addr(v_1), yy.IntProp1] v_1 = xx.IntProp1
-            il.Emit(OpCodes.Call, intCompareTo);        // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1
-            il.Emit(OpCodes.Dup);                       // [xx.IntProp1==yy.IntProp1, xx.IntProp1==yy.IntProp1] v_1 = xx.IntProp1
-            il.Emit(OpCodes.Stloc_0);                   // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            il.Emit(OpCodes.Brtrue_S, label_IL_002c);   // []  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
-
-            il.Emit(OpCodes.Ldarg_0);                   // [xx]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
-            il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            il.Emit(OpCodes.Ldarg_1);                   // [xx.StrProp1, yy]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1, yy.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            il.Emit(OpCodes.Call, strCompareOrdinal);   // [xx.StrProp1=yy.StrProp1]   v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            il.Emit(OpCodes.Br_S, label_IL_002d);
-            il.MarkLabel(label_IL_002c);
-            il.Emit(OpCodes.Ldloc_0);
-            il.MarkLabel(label_IL_002d);
-            il.Emit(OpCodes.Stloc_2);
-            il.Emit(OpCodes.Br_S, label_IL_0030);
-            il.MarkLabel(label_IL_0030);
-            il.Emit(OpCodes.Ldloc_2);
-            il.Emit(OpCodes.Ret);
-
-            // written by hand, invalid IL at runtime
-            //var labelDone= il.DefineLabel();
             //il.Emit(OpCodes.Ldarg_0);                   // [xx]
             //il.Emit(OpCodes.Callvirt, getIntProp1);     // [xx.IntProp1]
-            //il.Emit(OpCodes.Ldarg_1);                   // [xx.IntProp1, yy]
-            //il.Emit(OpCodes.Callvirt, getIntProp1);     // [xx.IntProp1, yy.IntProp1]
-            //il.Emit(OpCodes.Call, intCompareTo);        // [xx.IntProp1==yy.IntProp1]
-            //il.Emit(OpCodes.Brtrue_S, labelDone);       // [xx]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
-            //il.Emit(OpCodes.Ldarg_0);                   // [xx]
-            //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1]
-            //il.Emit(OpCodes.Ldarg_1);                   // [xx.StrProp1, yy]
-            //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1, yy.StrProp1]
-            //il.Emit(OpCodes.Call, strCompareOrdinal);   // [xx.StrProp1==yy.StrProp1]
-            //il.MarkLabel(labelDone);
+            //il.Emit(OpCodes.Stloc_1);                   // [] v_1 = xx.IntProp1
+            //il.Emit(OpCodes.Ldloca_S, v_1);             // [addr(v_1)] v_1=xx.IntProp1
+            //il.Emit(OpCodes.Ldarg_1);                   // [addr(v_1), yy] v_1 = xx.IntProp1
+            //il.Emit(OpCodes.Callvirt, getIntProp1);     // [addr(v_1), yy.IntProp1] v_1 = xx.IntProp1
+            //il.Emit(OpCodes.Call, intCompareTo);        // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1
+            //il.Emit(OpCodes.Dup);                       // [xx.IntProp1==yy.IntProp1, xx.IntProp1==yy.IntProp1] v_1 = xx.IntProp1
+            //il.Emit(OpCodes.Stloc_0);                   // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
+            //il.Emit(OpCodes.Brtrue_S, label_IL_002c);   // []  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
+
+            //il.Emit(OpCodes.Ldarg_0);                   // [xx]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
+            //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
+            //il.Emit(OpCodes.Ldarg_1);                   // [xx.StrProp1, yy]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
+            //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1, yy.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
+            //il.Emit(OpCodes.Call, strCompareOrdinal);   // [xx.StrProp1=yy.StrProp1]   v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
+            //il.Emit(OpCodes.Br_S, label_IL_002d);
+            //il.MarkLabel(label_IL_002c);
+            //il.Emit(OpCodes.Ldloc_0);
+            //il.MarkLabel(label_IL_002d);
+            //il.Emit(OpCodes.Stloc_2);
+            //il.Emit(OpCodes.Br_S, label_IL_0030);
+            //il.MarkLabel(label_IL_0030);
+            //il.Emit(OpCodes.Ldloc_2);
             //il.Emit(OpCodes.Ret);
+
+            // written by hand, invalid IL at runtime
+            var labelDone = il.DefineLabel();
+            var labelX = il.DefineLabel();
+            LocalBuilder v_0 = il.DeclareLocal(typeof(int));
+            LocalBuilder v_1 = il.DeclareLocal(typeof(int));
+            il.Emit(OpCodes.Ldarg_0);                   
+            il.Emit(OpCodes.Callvirt, getIntProp1);     
+            il.Emit(OpCodes.Stloc_0);
+            il.Emit(OpCodes.Ldloca_S, v_0);             
+            il.Emit(OpCodes.Ldarg_1);                   
+            il.Emit(OpCodes.Callvirt, getIntProp1);     
+            il.Emit(OpCodes.Call, intCompareTo);
+            il.Emit(OpCodes.Stloc_1);
+            //il.Emit(OpCodes.Dup);
+            //il.Emit(OpCodes.Brtrue_S, labelDone);  
+            //il.Emit(OpCodes.Ldarg_0);                   
+            //il.Emit(OpCodes.Callvirt, getStrProp1);     
+            //il.Emit(OpCodes.Ldarg_1);                   
+            //il.Emit(OpCodes.Callvirt, getStrProp1);     
+            //il.Emit(OpCodes.Call, strCompareOrdinal);   
+            il.Emit(OpCodes.Br_S, labelDone);
+            il.MarkLabel(labelDone);
+            il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Ret);
 
             return (Func<Target, Target, int>)method.CreateDelegate(typeof(Func<Target, Target, int>));
         }
