@@ -12,6 +12,9 @@ namespace SortFuncGeneration
             _sortFunc = sortFunc;
         }
 
-        public int Compare(T x, T y) => _sortFunc(x, y);
+        public int Compare(T x, T y)
+        {
+           return _sortFunc(x, y);
+        }
     }
 }

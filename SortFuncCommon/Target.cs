@@ -1,5 +1,6 @@
 ﻿
 
+using System;
 using FsCheck;
 using ProtoBuf;
 
@@ -27,18 +28,19 @@ namespace SortFuncCommon
 
         public override string ToString()
         {
-            return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
+            //return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
+            return $"{IntProp1} : {StrProp1}";
         }
     }
 
     public class TargetBuilder
     {
-        public TargetBuilder(int int1, int int2, NonEmptyString nes1, NonEmptyString nes2)
+        public TargetBuilder(int int1, int int2, Guid nes1, Guid nes2)
         {
             IntProp1 = int1;
             IntProp2 = int2;
-            StrProp1 = nes1.Get;
-            StrProp2 = nes2.Get;
+            StrProp1 = nes1.ToString();
+            StrProp2 = nes2.ToString();
         }
 
         public int IntProp1 { get; }
