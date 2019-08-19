@@ -19,7 +19,7 @@ namespace SortFuncGeneration
 
             if (comparisonValid)
             {
-                var summary = BenchmarkRunner.Run<SortingBenchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64));
+                var summary = BenchmarkRunner.Run<SortingBenchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator));
             }
 
             else
