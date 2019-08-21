@@ -12,7 +12,7 @@ namespace SortFuncGeneration
         static void Main()
         {
 
-            TestDataCreation.CreateAndPersistData(50000);
+            TestDataCreation.CreateAndPersistData(1000);
 
             var sb = new SortingBenchmarks();
             bool comparisonValid = sb.CheckValidBenchmarks();

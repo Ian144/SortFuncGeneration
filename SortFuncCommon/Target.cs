@@ -39,8 +39,8 @@ namespace SortFuncCommon
         {
             IntProp1 = int1;
             IntProp2 = int2;
-            StrProp1 = nes1.ToString();
-            StrProp2 = nes2.ToString();
+            StrProp1 = nes1.ToString().Substring(0, 12);
+            StrProp2 = nes2.ToString().Substring(0, 12);
         }
 
         public int IntProp1 { get; }
