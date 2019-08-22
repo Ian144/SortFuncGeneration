@@ -193,59 +193,65 @@ namespace SortFuncGeneration
 
             var il = method.GetILGenerator();
 
-            //LocalBuilder tmp = il.DeclareLocal(typeof(int));
+            LocalBuilder tmp = il.DeclareLocal(typeof(int));
             LocalBuilder v_1 = il.DeclareLocal(typeof(int));
             //LocalBuilder v_2 = il.DeclareLocal(typeof(int));
 
-            var label1 = il.DefineLabel(); // there are about 6 labels in decompiled IL
+            var label1 = il.DefineLabel(); 
+            var label2 = il.DefineLabel(); 
+            var label3 = il.DefineLabel(); 
 
-            // me
+            // release build, 4
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, getIntProp1);
+            il.Emit(OpCodes.Callvirt, getIntProp1);
             il.Emit(OpCodes.Stloc_1);
             il.Emit(OpCodes.Ldloca_S, v_1);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, getIntProp1);
+            il.Emit(OpCodes.Callvirt, getIntProp1);
             il.Emit(OpCodes.Call, intCompareTo);
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Brtrue_S, label1);
 
-            // in fscheck generation, select from a 128 strings, or somesuch
-
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, getStrProp1);
+            il.Emit(OpCodes.Callvirt, getStrProp1);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, getStrProp1);
+            il.Emit(OpCodes.Callvirt, getStrProp1);
             il.Emit(OpCodes.Call, strCompareOrdinal);
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Brtrue_S, label1);
+            il.Emit(OpCodes.Brtrue_S, label2);
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, getIntProp2);
             il.Emit(OpCodes.Stloc_1);
             il.Emit(OpCodes.Ldloca_S, v_1);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, getIntProp1);
+            il.Emit(OpCodes.Call, getIntProp2);
             il.Emit(OpCodes.Call, intCompareTo);
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Brtrue_S, label1);
+            il.Emit(OpCodes.Brtrue_S, label3);
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, getStrProp2);
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Call, getStrProp2);
             il.Emit(OpCodes.Call, strCompareOrdinal);
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Brtrue_S, label1);
+            il.Emit(OpCodes.Ret);
 
-            //il.Emit(OpCodes.Ret);
+            il.MarkLabel(label3);
+            il.Emit(OpCodes.Ldloc_0);
+            il.Emit(OpCodes.Ret);
+            il.MarkLabel(label2);
+            il.Emit(OpCodes.Ldloc_0);
+            il.Emit(OpCodes.Ret);
             il.MarkLabel(label1);
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
+
+
+
 
             //// release
             //il.Emit(OpCodes.Ldarg_0);                   // [xx]
@@ -257,14 +263,14 @@ namespace SortFuncGeneration
             //il.Emit(OpCodes.Call, intCompareTo);        // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1
             //il.Emit(OpCodes.Dup);                       // [xx.IntProp1==yy.IntProp1, xx.IntProp1==yy.IntProp1] v_1 = xx.IntProp1
             //il.Emit(OpCodes.Stloc_0);                   // [xx.IntProp1==yy.IntProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
-            //il.Emit(OpCodes.Brtrue_S, label_IL_002c);   // []  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
+            //il.Emit(OpCodes.Brtrue_S, label1);   // []  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
             //il.Emit(OpCodes.Ldarg_0);                   // [xx]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1     
             //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
             //il.Emit(OpCodes.Ldarg_1);                   // [xx.StrProp1, yy]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
             //il.Emit(OpCodes.Callvirt, getStrProp1);     // [xx.StrProp1, yy.StrProp1]  v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
             //il.Emit(OpCodes.Call, strCompareOrdinal);   // [xx.StrProp1=yy.StrProp1]   v_1 = xx.IntProp1, tmp = xx.IntProp1=yy.IntProp1
             //il.Emit(OpCodes.Ret);
-            //il.MarkLabel(label_IL_002c);
+            //il.MarkLabel(label1);
             //il.Emit(OpCodes.Ldloc_0);
             //il.Emit(OpCodes.Ret);
 
