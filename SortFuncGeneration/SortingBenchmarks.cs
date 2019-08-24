@@ -193,13 +193,10 @@ namespace SortFuncGeneration
 
             var il = method.GetILGenerator();
 
-            LocalBuilder tmp = il.DeclareLocal(typeof(int));
+            //LocalBuilder tmp = il.DeclareLocal(typeof(int));
             LocalBuilder v_1 = il.DeclareLocal(typeof(int));
-            //LocalBuilder v_2 = il.DeclareLocal(typeof(int));
 
             var label1 = il.DefineLabel(); 
-            var label2 = il.DefineLabel(); 
-            var label3 = il.DefineLabel(); 
 
             // release build, 4
             il.Emit(OpCodes.Ldarg_0);
@@ -220,7 +217,7 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Call, strCompareOrdinal);
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Brtrue_S, label2);
+            il.Emit(OpCodes.Brtrue_S, label1);
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, getIntProp2);
@@ -231,7 +228,7 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Call, intCompareTo);
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Brtrue_S, label3);
+            il.Emit(OpCodes.Brtrue_S, label1);
 
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, getStrProp2);
@@ -240,12 +237,7 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Call, strCompareOrdinal);
             il.Emit(OpCodes.Ret);
 
-            il.MarkLabel(label3);
-            il.Emit(OpCodes.Ldloc_0);
-            il.Emit(OpCodes.Ret);
-            il.MarkLabel(label2);
-            il.Emit(OpCodes.Ldloc_0);
-            il.Emit(OpCodes.Ret);
+
             il.MarkLabel(label1);
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
