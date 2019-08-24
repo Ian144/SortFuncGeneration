@@ -10,7 +10,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace SortFuncGeneration
 {
-    public static class SortFuncCompilerTernary
+    public static class SortFuncCompilerFEC
     {
         private static readonly MethodInfo _strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
@@ -32,7 +32,7 @@ namespace SortFuncGeneration
         //        string.Empty,
         //        lambdaExpr.ReturnType,
         //        paramTypes,
-        //        typeof(SortFuncCompilerTernary), skipVisibility: true);
+        //        typeof(SortFuncCompilerFEC), skipVisibility: true);
 
         //    var il = method.GetILGenerator();
         //    var parentFlags = lambdaExpr.ReturnType == typeof(void) ? ParentFlags.IgnoreResult : ParentFlags.Empty;
@@ -79,8 +79,6 @@ namespace SortFuncGeneration
         }
 
 
-
-
         private static Expression MakeSortExpression<T>(IEnumerable<SortBy> sortDescriptors, ParameterExpression param1Expr, ParameterExpression param2Expr, ParameterExpression tmpInt)
         {
             if (sortDescriptors.Count() == 1)
@@ -97,6 +95,7 @@ namespace SortFuncGeneration
             );
         }
 
+        
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
         {
             ParameterExpression param1Expr = Parameter(typeof(T));
@@ -112,8 +111,8 @@ namespace SortFuncGeneration
             Expression<Func<T, T, int>> lambda = Lambda<Func<T, T, int>>(block, param1Expr, param2Expr);
 
             //return lambda.Compile();
-            //return lambda.CompileFast(true);
-            return lambda.TryCompileWithoutClosure<Func<T, T, int>>();
+            return lambda.CompileFast(true);
+            //return lambda.TryCompileWithoutClosure<Func<T, T, int>>();
             //return lambda.TryCompile<Func<T, T, int>>();
             //return lambda.TryCompileWithPreCreatedClosure<Func<T, T, int>>();
         }

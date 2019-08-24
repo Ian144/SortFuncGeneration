@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SortFuncCompilerTernary.cs" />
+    <Compile Include="SortFuncCompilerFEC.cs" />
     <Compile Include="SortingBenchmarks.cs" />
     <Compile Include="MyComparer.cs" />
     <Compile Include="SortFuncCompiler.cs" />
