@@ -176,6 +176,8 @@ namespace SortFuncGeneration
 
             //https://blogs.msdn.microsoft.com/jmstall/2005/02/03/debugging-dynamically-generated-code-reflection-emit/
 
+            3.CompareTo(3);
+
 
             var method = new DynamicMethod(
                 name: Empty,
@@ -200,21 +202,21 @@ namespace SortFuncGeneration
 
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, getIntProp1);
+            il.Emit(OpCodes.Call, getIntProp1);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloca, 0);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Callvirt, getIntProp1);
+            il.Emit(OpCodes.Call, getIntProp1);
             il.Emit(OpCodes.Call, intCompareTo);
-            il.Emit(OpCodes.Dup); // Brtrue will pop the compare value at the top of the stack, but the value needs to be available to return if it is non-zero
+            il.Emit(OpCodes.Dup); // Brtrue will pop the compare value off the top of the stack, but the value needs to be available to return if it is non-zero, so making a copy
 
             il.Emit(OpCodes.Brtrue_S, label1);
             il.Emit(OpCodes.Pop); // the first comparison is zero, and is no longer required
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, getStrProp1);
+            il.Emit(OpCodes.Call, getStrProp1);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Callvirt, getStrProp1);
+            il.Emit(OpCodes.Call, getStrProp1);
             il.Emit(OpCodes.Call, strCompareOrdinal);
             il.Emit(OpCodes.Dup);
 
@@ -222,11 +224,11 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Pop); // the second comparison is zero
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, getIntProp2);
+            il.Emit(OpCodes.Call, getIntProp2);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloca, 0);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Callvirt, getIntProp2);
+            il.Emit(OpCodes.Call, getIntProp2);
             il.Emit(OpCodes.Call, intCompareTo);
             il.Emit(OpCodes.Dup);
 
@@ -234,9 +236,9 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Pop); // the third comparison is zero
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, getStrProp2);
+            il.Emit(OpCodes.Call, getStrProp2);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Callvirt, getStrProp2);
+            il.Emit(OpCodes.Call, getStrProp2);
             il.Emit(OpCodes.Call, strCompareOrdinal);
             
             il.MarkLabel(label1);
