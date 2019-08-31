@@ -16,105 +16,50 @@ namespace SortFuncGeneration
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
         private static readonly ConstantExpression _zeroExpr = Constant(0);
 
-        //private static readonly Expression<Func<string, string, int>> _exprStrComp = (s1, s2) => string.CompareOrdinal(s1, s2);
-        //private static readonly Expression<Func<int, int, int>> _exprIntComp = (aa, bb) => aa.CompareTo(bb);
-
-        //private static readonly MethodInfo _objectEqualsMethod = ((Func<int, int, int>)int.CompareTo).Method;
-
-
-        //public static TDelegate TryCompileWithoutClosure<TDelegate>(this LambdaExpression lambdaExpr)
-        //    where TDelegate : class
-        //{
-        //    var closureInfo = new ClosureInfo(true);
-        //    var paramTypes = Tools.GetParamTypes(lambdaExpr.Parameters);
-
-        //    var method = new DynamicMethod(
-        //        string.Empty,
-        //        lambdaExpr.ReturnType,
-        //        paramTypes,
-        //        typeof(SortFuncCompilerFEC), skipVisibility: true);
-
-        //    var il = method.GetILGenerator();
-        //    var parentFlags = lambdaExpr.ReturnType == typeof(void) ? ParentFlags.IgnoreResult : ParentFlags.Empty;
-        //    if (!EmittingVisitor.TryEmit(lambdaExpr.Body, lambdaExpr.Parameters, il, ref closureInfo, parentFlags))
-        //        return null;
-        //    il.Emit(OpCodes.Ret);
-
-        //    var delegateType = typeof(TDelegate) != typeof(Delegate) ? typeof(TDelegate) : Tools.GetFuncOrActionType(paramTypes, lambdaExpr.ReturnType);
-        //    return (TDelegate)(object)method.CreateDelegate(delegateType);
-        //}
-
-
         private static Expression MakePropertyCompareExpressionCall(SortBy sortDescriptor, ParameterExpression rm1, ParameterExpression rm2)
         {
-            try
+            var propA = Property(rm1, sortDescriptor.PropName);
+            var propB = Property(rm2, sortDescriptor.PropName);
+            var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
+
+            if (prop1.Type == typeof(string))
             {
-                MemberExpression propA = Property(rm1, sortDescriptor.PropName);
-                MemberExpression propB = Property(rm2, sortDescriptor.PropName);
-                var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
-
-                Expression compareExpr;
-
-                if (prop1.Type == typeof(string))
-                {
-                    compareExpr = Call(_strCompareOrdinal, prop1, prop2);
-
-                }
-                else if (prop1.Type == typeof(int))
-                {
-                    compareExpr = Call(prop1, _intCompareTo, prop2);
-                }
-                else
-                {
-                    throw new ApplicationException($"unsupported property type: {prop1.Type}");
-                }
-
-                return compareExpr;
-
+                return Call(_strCompareOrdinal, prop1, prop2);
             }
-            catch
+
+            if (prop1.Type == typeof(int))
             {
-                throw new ApplicationException($"unknown property: {sortDescriptor.PropName}");
+                return Call(prop1, _intCompareTo, prop2);
             }
+
+            throw new ApplicationException($"comparison not supported for: {prop1.Type}");
         }
 
-
-        private static Expression MakeSortExpression<T>(IEnumerable<SortBy> sortDescriptors, ParameterExpression param1Expr, ParameterExpression param2Expr, ParameterExpression tmpInt)
+        private static Expression MakeSortExpression<T>(IEnumerable<SortBy> sortBys, ParameterExpression param1Expr, ParameterExpression param2Expr, ParameterExpression tmpInt)
         {
-            if (sortDescriptors.Count() == 1)
+            if (sortBys.Count() == 1)
             {
-                return MakePropertyCompareExpressionCall(sortDescriptors.First(), param1Expr, param2Expr);
+                return MakePropertyCompareExpressionCall(sortBys.First(), param1Expr, param2Expr);
             }
-            
-            Expression compare = MakePropertyCompareExpressionCall(sortDescriptors.First(), param1Expr, param2Expr);
+
+            var compare = MakePropertyCompareExpressionCall(sortBys.First(), param1Expr, param2Expr);
 
             return Condition(
-                NotEqual(Assign(tmpInt, compare), _zeroExpr), // perform the comparison and assign the value to tmpInt, assignments are expressions and have a value
+                NotEqual(Assign(tmpInt, compare), _zeroExpr), // assign the value to tmpInt and perform the comparison, assignment is an expressions and has a value
                 tmpInt,
-                MakeSortExpression<T>(sortDescriptors.Skip(1), param1Expr, param2Expr, tmpInt)
+                MakeSortExpression<T>(sortBys.Skip(1), param1Expr, param2Expr, tmpInt)
             );
         }
 
-        
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
         {
-            ParameterExpression param1Expr = Parameter(typeof(T));
-            ParameterExpression param2Expr = Parameter(typeof(T));
-            ParameterExpression tmpInt = Variable(typeof(int), "tmp");
-
-            Expression compositeCompare = MakeSortExpression<T>(sortDescriptors, param1Expr, param2Expr, tmpInt);
-
-            ParameterExpression[] variables = { tmpInt };
-            Expression[] body = { compositeCompare };
-            var block = Block(variables, body);
-
-            Expression<Func<T, T, int>> lambda = Lambda<Func<T, T, int>>(block, param1Expr, param2Expr);
-
-            //return lambda.Compile();
+            var param1 = Parameter(typeof(T));
+            var param2 = Parameter(typeof(T));
+            var tmpInt = Variable(typeof(int));
+            Expression compositeCompare = MakeSortExpression<T>(sortDescriptors, param1, param2, tmpInt);
+            var block = Block(tmpInt, compositeCompare);
+            var lambda = Lambda<Func<T, T, int>>(block, param1, param2);
             return lambda.CompileFast(true);
-            //return lambda.TryCompileWithoutClosure<Func<T, T, int>>();
-            //return lambda.TryCompile<Func<T, T, int>>();
-            //return lambda.TryCompileWithPreCreatedClosure<Func<T, T, int>>();
         }
     }
 }

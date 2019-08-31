@@ -1,7 +1,6 @@
 ﻿
 
 using System;
-using FsCheck;
 using ProtoBuf;
 
 // ReSharper disable UnusedMember.Global

@@ -11,20 +11,19 @@ namespace SortFuncGeneration
     {
         static void Main()
         {
-
             TestDataCreation.CreateAndPersistData(50000);
 
-            var sb = new SortingBenchmarks();
-            bool comparisonValid = sb.CheckValidBenchmarks();
+            // checks all sort methods produce the same results
+            var bmark = new Benchmarks();
 
-            if (comparisonValid)
+            if (bmark.IsValid())
             {
-                var summary = BenchmarkRunner.Run<SortingBenchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator));
+                var summary = BenchmarkRunner.Run<Benchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator));
             }
 
             else
             {
-                Console.WriteLine("invalid benchmark, handcoded is not equivalent to generated");
+                Console.WriteLine("invalid benchmark");
             }
         }
     }

@@ -45,8 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SortFuncCompilerFEC.cs" />
-    <Compile Include="SortingBenchmarks.cs" />
-    <Compile Include="MyComparer.cs" />
+    <Compile Include="Benchmarks.cs" />
+    <Compile Include="ComparerAdaptor.cs" />
     <Compile Include="SortFuncCompiler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
-using FastExpressionCompiler;
 
 namespace SortFuncGeneration
 {
@@ -42,7 +41,7 @@ namespace SortFuncGeneration
             lambda.CompileToMethod(methodBuilder);
             var dynamicType = typeBuilder.CreateType();
             // ReSharper disable once AssignNullToNotNullAttribute // don't mind blowing up if dynamicType.GetMethod returns null
-            return (Func<T,T,int>)Delegate.CreateDelegate(typeof(Func<T,T,int>), dynamicType.GetMethod("test3"));
+            return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), dynamicType.GetMethod("test3"));
         }
 
 
@@ -53,43 +52,36 @@ namespace SortFuncGeneration
             LabelTarget labelReturn,
             ParameterExpression result)
         {
-            try
+            MemberExpression propA = Expression.Property(rm1, sortDescriptor.PropName);
+            MemberExpression propB = Expression.Property(rm2, sortDescriptor.PropName);
+            var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
+
+            Expression compareExpr;
+
+            if (prop1.Type == typeof(string))
             {
-                MemberExpression propA = Expression.Property(rm1, sortDescriptor.PropName);
-                MemberExpression propB = Expression.Property(rm2, sortDescriptor.PropName);
-                var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
+                compareExpr = Expression.Call(_strCompareTo, prop1, prop2);
+            }
+            else if (prop1.Type == typeof(int))
+            {
+                compareExpr = Expression.Call(prop1, _intCompareTo, prop2);
+            }
+            else
+            {
+                throw new ApplicationException($"unsupported property type: {prop1.Type}");
+            }
 
-                Expression compareExpr;
+            IEnumerable<ParameterExpression> variables = new[] { result };
 
-                if (prop1.Type == typeof(string))
-                {
-                    compareExpr = Expression.Call(_strCompareTo, prop1, prop2);
-                }
-                else if (prop1.Type == typeof(int))
-                {
-                    compareExpr = Expression.Call(prop1, _intCompareTo, prop2);
-                }
-                else
-                {
-                    throw new ApplicationException($"unsupported property type: {prop1.Type}");
-                }
-
-                IEnumerable<ParameterExpression> variables = new[] { result };
-
-                IEnumerable<Expression> expressions = new Expression[]
-                {
+            IEnumerable<Expression> expressions = new Expression[]
+            {
                 Expression.Assign(result, compareExpr),
                 Expression.IfThen(
                     Expression.NotEqual(Expression.Constant(0), result),
                     Expression.Goto(labelReturn, result))
-                };
+            };
 
-                return Expression.Block(variables, expressions);
-            }
-            catch
-            {
-                throw new ApplicationException($"unknown property: {sortDescriptor.PropName}");
-            }
+            return Expression.Block(variables, expressions);
         }
 
         private static BlockExpression MakeCompositeCompare(ParameterExpression param1Expr, ParameterExpression param2Expr, IEnumerable<SortBy> sortBys)

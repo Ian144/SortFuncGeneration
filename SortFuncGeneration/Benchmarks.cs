@@ -18,25 +18,23 @@ using static System.String;
 namespace SortFuncGeneration
 {
     [MemoryDiagnoser]
-    public class SortingBenchmarks
+    public class Benchmarks
     {
         private List<Target> _xs;
         private readonly Consumer _consumer = new Consumer();
 
-        private MyComparer<Target> _generatedComparer;
-        private MyComparer<Target> _handCodedImperativeComparer;
-        private MyComparer<Target> _generatedComparerFEC;
-        private MyComparer<Target> _handCodedTernary;
-        private MyComparer<Target> _emittedComparer;
+        private ComparerAdaptor<Target> _generatedComparer;
+        private ComparerAdaptor<Target> _handCodedImperativeComparer;
+        private ComparerAdaptor<Target> _generatedComparerFEC;
+        private ComparerAdaptor<Target> _handCodedTernary;
+        private ComparerAdaptor<Target> _emittedComparer;
 
         private IComparer<Target> _nitoComparer;
         private IComparer<Target> _handCodedComposedFunctionsComparer;
 
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
-        private static readonly Func<Target, Target, int>[] _composedSubFuncs = {CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2};
-        //private static readonly Func<Target, Target, int>[] _composedSubFuncs = {CmpIntProp1, CmpStrProp1};
-
+        private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
 
         [IterationSetup]
         public void Setup()
@@ -52,30 +50,30 @@ namespace SortFuncGeneration
                 new SortBy {PropName = "StrProp2", Ascending = true},
             };
 
-            // lazy, evaluated in a benchmark and in the check-valid function
+            // lazy, evaluated in a benchmark and in the isValid function
             _lazyLinqOrderByThenBy = _xs
                 .OrderBy(x => x.IntProp1)
                 .ThenBy(x => x.StrProp1, StringComparer.Ordinal)
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
 
-            _generatedComparer = new MyComparer<Target>(
+            _generatedComparer = new ComparerAdaptor<Target>(
                 SortFuncCompiler.MakeSortFunc<Target>(sortBys)
             );
 
-            _generatedComparerFEC = new MyComparer<Target>(
+            _generatedComparerFEC = new ComparerAdaptor<Target>(
                 SortFuncCompilerFEC.MakeSortFunc<Target>(sortBys)
             );
 
-            _emittedComparer = new MyComparer<Target>( 
+            _emittedComparer = new ComparerAdaptor<Target>(
                 MakeDynamic()
             );
-            
-            _handCodedImperativeComparer = new MyComparer<Target>(HandCoded);
 
-            _handCodedTernary = new MyComparer<Target>(HandCodedTernary);
+            //_handCodedImperativeComparer = new ComparerAdaptor<Target>(HandCoded);
 
-            _handCodedComposedFunctionsComparer = new MyComparer<Target>(HandCodedComposedFuncs);
+            _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
+
+            _handCodedComposedFunctionsComparer = new ComparerAdaptor<Target>(HandCodedComposedFuncs);
 
             _nitoComparer = ComparerBuilder.For<Target>()
                 .OrderBy(p => p.IntProp1)
@@ -84,21 +82,21 @@ namespace SortFuncGeneration
                 .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
         }
 
-        private static int HandCoded(Target aa, Target bb)
-        {
-            // aa and bb flipped when the comparison is descending
+        //private static int HandCoded(Target aa, Target bb)
+        //{
+        //    // aa and bb flipped when the comparison is descending
 
-            int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
-            if (s1 != 0) return s1;
+        //    int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
+        //    if (s1 != 0) return s1;
 
-            int s2 = CompareOrdinal(aa.StrProp1, bb.StrProp1);
-            if (s2 != 0) return s2;
+        //    int s2 = CompareOrdinal(aa.StrProp1, bb.StrProp1);
+        //    if (s2 != 0) return s2;
 
-            int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
-            if (s3 != 0) return s3;
+        //    int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
+        //    if (s3 != 0) return s3;
 
-            return CompareOrdinal(aa.StrProp2, bb.StrProp2);
-        }
+        //    return CompareOrdinal(aa.StrProp2, bb.StrProp2);
+        //}
 
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,22 +126,16 @@ namespace SortFuncGeneration
 
         private static int HandCodedComposedFuncs(Target aa, Target bb)
         {
-            foreach (var func in _composedSubFuncs)
+            //foreach (var func in _composedSubFuncs)
+            for( int ctr = 0; ctr < _composedSubFuncs.Length; ++ctr)
             {
+                var func = _composedSubFuncs[ctr];
                 int cmp = func(aa, bb);
                 if (cmp != 0)
                     return cmp;
             }
 
             return 0;
-        }
-
-        private static int HandCodedTernary2(Target xx, Target yy)
-        {
-            int tmp;
-            return 0 != (tmp = xx.IntProp1.CompareTo(yy.IntProp1))
-                ? tmp
-                : CompareOrdinal(xx.StrProp1, yy.StrProp1);
         }
 
 
@@ -163,8 +155,8 @@ namespace SortFuncGeneration
 
         public static Func<Target, Target, int> MakeDynamic()
         {
-            MethodInfo strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] {typeof(string), typeof(string)});
-            MethodInfo intCompareTo = typeof(int).GetMethod("CompareTo", new[] {typeof(int)});
+            MethodInfo strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
+            MethodInfo intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
 
             MethodInfo getIntProp1 = typeof(Target).GetMethod("get_IntProp1", Type.EmptyTypes);
             MethodInfo getIntProp2 = typeof(Target).GetMethod("get_IntProp2", Type.EmptyTypes);
@@ -172,43 +164,33 @@ namespace SortFuncGeneration
             MethodInfo getStrProp2 = typeof(Target).GetMethod("get_StrProp2", Type.EmptyTypes);
 
             Type returnType = typeof(int);
-            Type[] methodParamTypes = {typeof(Target), typeof(Target)};
+            Type[] methodParamTypes = { typeof(Target), typeof(Target) };
 
             //https://blogs.msdn.microsoft.com/jmstall/2005/02/03/debugging-dynamically-generated-code-reflection-emit/
 
-            3.CompareTo(3);
-
-
-            var method = new DynamicMethod(
+            var dynamicMethod = new DynamicMethod(
                 name: Empty,
                 returnType: returnType,
-                parameterTypes: methodParamTypes,
-                owner: typeof(Program),
-                skipVisibility: true);
+                parameterTypes: methodParamTypes
+                ,owner: typeof(Program)
+                //,skipVisibility: true
+                );
 
-            //var ab = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("assembly"), AssemblyBuilderAccess.Run);
-            //var dynamicModule = ab.DefineDynamicModule("module");
-            //var method = new DynamicMethod(
-            //    name: Empty,
-            //    returnType: returnType,
-            //    parameterTypes: methodParamTypes,
-            //    m: dynamicModule);
 
-            var il = method.GetILGenerator();
+            var il = dynamicMethod.GetILGenerator();
 
-            /*LocalBuilder v_1 =*/ il.DeclareLocal(typeof(int));
+            il.DeclareLocal(typeof(int));
 
-            var label1 = il.DefineLabel(); 
-
+            var label1 = il.DefineLabel();
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, getIntProp1);
+            il.Emit(OpCodes.Callvirt, getIntProp1);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloca, 0);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, getIntProp1);
+            il.Emit(OpCodes.Callvirt, getIntProp1);
             il.Emit(OpCodes.Call, intCompareTo);
-            il.Emit(OpCodes.Dup); // Brtrue will pop the compare value off the top of the stack, but the value needs to be available to return if it is non-zero, so making a copy
+            il.Emit(OpCodes.Dup); // Brtrue_S will pop the compare value off the top of the stack, but the value needs to be available to return if it is non-zero, so making a copy
 
             il.Emit(OpCodes.Brtrue_S, label1);
             il.Emit(OpCodes.Pop); // the first comparison is zero, and is no longer required
@@ -224,11 +206,11 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Pop); // the second comparison is zero
 
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, getIntProp2);
+            il.Emit(OpCodes.Callvirt, getIntProp2);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloca, 0);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, getIntProp2);
+            il.Emit(OpCodes.Callvirt, getIntProp2);
             il.Emit(OpCodes.Call, intCompareTo);
             il.Emit(OpCodes.Dup);
 
@@ -240,14 +222,14 @@ namespace SortFuncGeneration
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Call, getStrProp2);
             il.Emit(OpCodes.Call, strCompareOrdinal);
-            
+
             il.MarkLabel(label1);
             il.Emit(OpCodes.Ret);
 
-            return (Func<Target, Target, int>) method.CreateDelegate(typeof(Func<Target, Target, int>));
+            return (Func<Target, Target, int>)dynamicMethod.CreateDelegate(typeof(Func<Target, Target, int>));
         }
 
-        public bool CheckValidBenchmarks()
+        public bool IsValid()
         {
             Setup();
 
@@ -289,58 +271,62 @@ namespace SortFuncGeneration
                 emittedOk;
         }
 
+        //[Benchmark]
+        //public void Generated()
+        //{
+        //    _xs.Sort(_generatedComparer);
+        //}
+
+
         [Benchmark]
-        public void ComposedFunctionsListSort()
+        public void ComposedFunctions()
         {
             _xs.Sort(_handCodedComposedFunctionsComparer);
         }
 
-        [Benchmark]
-        public void NitoListSort()
-        {
-            _xs.Sort(_nitoComparer);
-        }
 
         [Benchmark]
-        public void GeneratedListSortFEC()
+        public void GeneratedFastExprComp()
         {
             _xs.Sort(_generatedComparerFEC);
         }
 
+
         [Benchmark]
-        public void EmittedListSort()
+        public void ILEmitted()
         {
             _xs.Sort(_emittedComparer);
         }
 
         [Benchmark]
-        public void GeneratedListSort()
-        {
-            _xs.Sort(_generatedComparer);
-        }
-
-        [Benchmark]
-        public void HandCodedImperativeListSort()
-        {
-            _xs.Sort(_handCodedImperativeComparer);
-        }
-
-        [Benchmark]
-        public void HandCodedListSort()
+        public void HandCoded()
         {
             _xs.Sort(_handCodedTernary);
         }
 
-        [Benchmark]
-        public void HandCodedOrderBy()
-        {
-            _xs.OrderBy(m => m, _handCodedImperativeComparer).Consume(_consumer);
-        }
 
-        [Benchmark]
-        public void LinqOrderByThenBy()
-        {
-            _lazyLinqOrderByThenBy.Consume(_consumer);
-        }
+        //[Benchmark]
+        //public void HandCodedImperative()
+        //{
+        //    _xs.Sort(_handCodedImperativeComparer);
+        //}
+
+        //[Benchmark]
+        //public void HandCodedOrderBy()
+        //{
+        //    _xs.OrderBy(m => m, _handCodedImperativeComparer).Consume(_consumer);
+        //}
+
+        //[Benchmark]
+        //public void LinqOrderByThenBy()
+        //{
+        //    _lazyLinqOrderByThenBy.Consume(_consumer);
+        //}
+
+        //[Benchmark]
+        //public void Nito()
+        //{
+        //    _xs.Sort(_nitoComparer);
+        //}
     }
 }
