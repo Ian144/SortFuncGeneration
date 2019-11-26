@@ -33,7 +33,6 @@ namespace SortFuncGeneration
                 owner: typeof(ILEmitGenerator), // the emited sort function will run x3 slower
                 skipVisibility: true);
 
-
             var il = dynamicMethod.GetILGenerator();
 
             il.DeclareLocal(typeof(int));
@@ -50,22 +49,22 @@ namespace SortFuncGeneration
                     if (ascending)
                     {
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Callvirt, mi);
+                        il.Emit(OpCodes.Call, mi);
                         il.Emit(OpCodes.Stloc_0);
-                        il.Emit(OpCodes.Ldloca, 0); // load location address, unlike 
+                        il.Emit(OpCodes.Ldloca, 0); // load location address, unlike for string
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Callvirt, mi);
+                        il.Emit(OpCodes.Call, mi);
                         il.Emit(OpCodes.Call, _intCompareTo);
                     }
                     else
                     {
                         // Ldarg_ are the other way around compared to ascending
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Callvirt, mi);
+                        il.Emit(OpCodes.Call, mi);
                         il.Emit(OpCodes.Stloc_0);
                         il.Emit(OpCodes.Ldloca, 0);
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Callvirt, mi);
+                        il.Emit(OpCodes.Call, mi);
                         il.Emit(OpCodes.Call, _intCompareTo);
                     }
                 }
@@ -97,7 +96,7 @@ namespace SortFuncGeneration
 
                 if (!isLast)
                 {
-                    il.Emit(OpCodes.Dup);
+                    il.Emit(OpCodes.Dup); // Brtrue_S will pop the last value on the stack after testing
                     il.Emit(OpCodes.Brtrue_S, label1);
                     il.Emit(OpCodes.Pop);
                 }

@@ -20,7 +20,6 @@ namespace SortFuncGeneration
             {
                 var summary = BenchmarkRunner.Run<Benchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator));
             }
-
             else
             {
                 Console.WriteLine("invalid benchmark");
