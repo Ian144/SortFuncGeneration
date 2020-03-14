@@ -39,57 +39,56 @@ namespace SortFuncGeneration
 
             var label1 = il.DefineLabel();
 
-
             for(int ctr = 0; ctr < xs.Count; ++ctr)
             {
-                (MethodInfo mi, bool ascending) = xs[ctr];
+                (MethodInfo propGet, bool ascending) = xs[ctr];
 
-                if (mi.ReturnType == typeof(int))
+                if (propGet.ReturnType == typeof(int))
                 {
                     if (ascending)
                     {
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Stloc_0);
                         il.Emit(OpCodes.Ldloca, 0); // load location address, unlike for string
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Call, _intCompareTo);
                     }
                     else
                     {
                         // Ldarg_ are the other way around compared to ascending
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Stloc_0);
                         il.Emit(OpCodes.Ldloca, 0);
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Call, _intCompareTo);
                     }
                 }
-                else if (mi.ReturnType == typeof(string))
+                else if (propGet.ReturnType == typeof(string))
                 {
                     if (ascending)
                     {
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Call, _strCompareOrdinal);
                     }
                     else
                     {
                         il.Emit(OpCodes.Ldarg_1);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Call, mi);
+                        il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Call, _strCompareOrdinal);
                     }
                 }
                 else
                 {
-                    throw new ApplicationException($"unsupported property type: {mi.ReturnType}");                    
+                    throw new ApplicationException($"unsupported property type: {propGet.ReturnType}");                    
                 }
 
                 bool isLast = ctr == xs.Count - 1;

@@ -44,16 +44,15 @@ namespace SortFuncGeneration
             return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), dynamicType.GetMethod("test3"));
         }
 
-
         private static BlockExpression MakePropertyCompareBlock(
             SortBy sortDescriptor,
-            ParameterExpression rm1,
-            ParameterExpression rm2,
+            ParameterExpression propExp1,
+            ParameterExpression propExp2,
             LabelTarget labelReturn,
             ParameterExpression result)
         {
-            MemberExpression propA = Expression.Property(rm1, sortDescriptor.PropName);
-            MemberExpression propB = Expression.Property(rm2, sortDescriptor.PropName);
+            MemberExpression propA = Expression.Property(propExp1, sortDescriptor.PropName);
+            MemberExpression propB = Expression.Property(propExp2, sortDescriptor.PropName);
             var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
 
             Expression compareExpr;

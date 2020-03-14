@@ -25,6 +25,7 @@ namespace SortFuncGeneration
 
     class MyArbitraries
     {
+        // ReSharper disable once UnusedMember.Global
         public static Arbitrary<string> String() => new ArbitrarySimpleString();
     }
 

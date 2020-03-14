@@ -18,7 +18,11 @@ namespace SortFuncGeneration
 
             if (bmark.IsValid())
             {
-                var summary = BenchmarkRunner.Run<Benchmarks>(DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator));
+                //IConfig cfg = DefaultConfig.Instance.With(Job.LegacyJitX64,Job.RyuJitX64,Job.VeryLongRun).With(ConfigOptions.DisableOptimizationsValidator);
+                
+                IConfig cfg = DefaultConfig.Instance.With(Job.RyuJitX64).With(ConfigOptions.DisableOptimizationsValidator);
+                
+                var summary = BenchmarkRunner.Run<Benchmarks>(cfg);
             }
             else
             {
@@ -27,3 +31,4 @@ namespace SortFuncGeneration
         }
     }
 }
+    

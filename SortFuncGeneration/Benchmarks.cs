@@ -78,16 +78,16 @@ namespace SortFuncGeneration
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpIntProp1(Target aa1, Target bb1) => aa1.IntProp1.CompareTo(bb1.IntProp1);
+        static int CmpIntProp1(Target p1, Target p2) => p1.IntProp1.CompareTo(p2.IntProp1);
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpStrProp1(Target aa2, Target bb2) => CompareOrdinal(aa2.StrProp1, bb2.StrProp1);
+        static int CmpStrProp1(Target p1, Target p2) => CompareOrdinal(p1.StrProp1, p2.StrProp1);
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpIntProp2(Target aa3, Target bb3) => aa3.IntProp2.CompareTo(bb3.IntProp2);
+        static int CmpIntProp2(Target p1, Target p2) => p1.IntProp2.CompareTo(p2.IntProp2);
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpStrProp2(Target aa4, Target bb4) => CompareOrdinal(aa4.StrProp2, bb4.StrProp2);
+        static int CmpStrProp2(Target p1, Target p2) => CompareOrdinal(p1.StrProp2, p2.StrProp2);
 
         //private static int HandCodedComposedFuncs(Target aa, Target bb)
         //{
@@ -104,10 +104,8 @@ namespace SortFuncGeneration
 
         private static int HandCodedComposedFuncs(Target aa, Target bb)
         {
-            //foreach (var func in _composedSubFuncs)
-            for( int ctr = 0; ctr < _composedSubFuncs.Length; ++ctr)
+            foreach (var func in _composedSubFuncs)
             {
-                var func = _composedSubFuncs[ctr];
                 int cmp = func(aa, bb);
                 if (cmp != 0)
                     return cmp;
