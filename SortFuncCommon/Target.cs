@@ -25,9 +25,6 @@ namespace SortFuncCommon
         [ProtoMember(4)]
         public string StrProp2 { get; set; }
 
-        public override string ToString()
-        {
-            return $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
-        }
+        public override string ToString() => $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
     }
 }
