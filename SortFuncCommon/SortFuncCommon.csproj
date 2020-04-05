@@ -50,7 +50,7 @@
       <Version>3.0.0-alpha4</Version>
     </PackageReference>
     <PackageReference Include="protobuf-net">
-      <Version>2.4.0</Version>
+      <Version>3.0.0-alpha.133</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

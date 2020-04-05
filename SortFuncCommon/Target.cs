@@ -1,7 +1,4 @@
-﻿
-
-using System;
-using ProtoBuf;
+﻿using ProtoBuf;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global used implicitly by fscheck

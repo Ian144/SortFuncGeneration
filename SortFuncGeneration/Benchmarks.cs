@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using Nito.Comparers;
+//using Nito.Comparers;
 using SortFuncCommon;
 using static System.String;
 
@@ -27,7 +27,7 @@ namespace SortFuncGeneration
         private ComparerAdaptor<Target> _handCodedTernary;
         private ComparerAdaptor<Target> _emittedComparer;
 
-        private IComparer<Target> _nitoComparer;
+        //private IComparer<Target> _nitoComparer;
         private IComparer<Target> _handCodedComposedFunctionsComparer;
 
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
@@ -70,11 +70,11 @@ namespace SortFuncGeneration
 
             _handCodedComposedFunctionsComparer = new ComparerAdaptor<Target>(HandCodedComposedFuncs);
 
-            _nitoComparer = ComparerBuilder.For<Target>()
-                .OrderBy(p => p.IntProp1)
-                .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
-                .ThenBy(p => p.IntProp2)
-                .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
+            //_nitoComparer = ComparerBuilder.For<Target>()
+            //    .OrderBy(p => p.IntProp1)
+            //    .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
+            //    .ThenBy(p => p.IntProp2)
+            //    .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
